@@ -37,13 +37,15 @@ const getSqlData = function (data, cb) {
     
     const q = data.sql.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
 
+    const t0 = new Date();
     connection.query(q, function (error, results, fields) {
+        const t1 = new Date();
         if (error) {
             console.error(error);
             data.sql.error = error;
         }
         else {
-            // data.sql.result = results;
+            data.sql.took = (t1 - t0);
             data.sql.resultCount = results.length;
             data.sql.result = results.map((r) => { return r.TABLE_NAME; }).join(' ');
         }
