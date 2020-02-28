@@ -21,7 +21,7 @@ const getTableContents = function (data, connection, cb) {
     
     const randoTable = data.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
 
-    const q = tc.query = `SELECT * FROM ${randoTable} LIMIT 5;`;
+    const q = tc.query = `SELECT * FROM ${process.env.MYSQL_DATABASE}.${randoTable} LIMIT 5;`;
 
     const t0 = new Date();
     
