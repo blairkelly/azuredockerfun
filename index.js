@@ -57,7 +57,7 @@ const getTables = function (data, connection, cb) {
             //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
             tables.results = results;
         }
-        cb(null, data);
+        getTableContents(data, connection, cb);
     });
 }
 
