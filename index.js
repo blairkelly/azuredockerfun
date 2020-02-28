@@ -5,6 +5,10 @@ const fs = require('fs');
 const mysql = require('mysql');
 
 // Constants
+process.env.MYSQL_HOST = process.env.MYSQL_HOST || 'localhost';
+process.env.MYSQL_USER = process.env.MYSQL_USER || 'root';
+process.env.MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
+process.env.MYSQL_DATABASE = process.env.MYSQL_DATABASE || 'test';
 const PORT = process.env.PORT || 3500;
 
 const dirContents = function (cb) {
@@ -33,7 +37,12 @@ const getDBConnection = function () {
 const getTableContents = function (data, cb) {
     const tc = data.sql.tableContents = {};
     
-    const randoTable = data.sql.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
+    if (!data.sql.tables.results.length) return cb(null, data);
+
+    console.log(data.sql.tables.results);
+
+    const randoSelection = data.sql.tables.results[Math.floor(Math.random() * data.sql.tables.results.length)];
+    const randoTable = randoSelection.table_name || randoSelection.TABLE_NAME;
 
     const q = tc.query = `SELECT * FROM ${process.env.MYSQL_DATABASE}.${randoTable} LIMIT 5;`;
 
@@ -75,6 +84,7 @@ const getTables = function (data, cb) {
         tables.resultCount = results.length;
         //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
         tables.results = results;
+
         getTableContents(data, cb);
     });
 }
@@ -100,7 +110,7 @@ const getData = function (cb) {
     dirContents((err, contents) => {
         if (err) return cb(err);
         data.dirContents = contents;
-        if (!process.env.MYSQL_USER) return cb(null, data);
+        //if (!process.env.MYSQL_USER) return cb(null, data);
         getSqlData(data, cb);
     });
 }
