@@ -16,6 +16,51 @@ const dirContents = function (cb) {
     });
 }
 
+const getTableContents = function (data, connection, cb) {
+    const tc = data.sql.tableContents = {};
+    
+    const randoTable = data.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
+
+    const q = tc.query = `SELECT * FROM ${randoTable} LIMIT 5;`;
+
+    const t0 = new Date();
+    
+    connection.query(q, function (error, results, fields) {
+        const t1 = new Date();
+        if (error) {
+            console.error(error);
+            tc.error = error;
+        }
+        else {
+            tc.took = (t1 - t0);
+            tc.resultCount = results.length;
+        }
+        cb(null, data);
+    });
+}
+
+const getTables = function (data, connection, cb) {
+    const tables = data.sql.tables = {};
+    const q = tables.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
+
+    const t0 = new Date();
+    
+    connection.query(q, function (error, results, fields) {
+        const t1 = new Date();
+        if (error) {
+            console.error(error);
+            tables.error = error;
+        }
+        else {
+            tables.took = (t1 - t0);
+            tables.resultCount = results.length;
+            //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
+            tables.results = results;
+        }
+        cb(null, data);
+    });
+}
+
 const getSqlData = function (data, cb) {
     data.sql = {
         connectionConfig: {
@@ -35,22 +80,9 @@ const getSqlData = function (data, cb) {
      
     connection.connect();
     
-    const q = data.sql.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
-
-    const t0 = new Date();
-    connection.query(q, function (error, results, fields) {
-        const t1 = new Date();
-        if (error) {
-            console.error(error);
-            data.sql.error = error;
-        }
-        else {
-            data.sql.took = (t1 - t0);
-            data.sql.resultCount = results.length;
-            data.sql.result = results.map((r) => { return r.TABLE_NAME; }).join(' ');
-        }
-        cb(null, data);
+    getTables(data, connection, function (err, data) {
         connection.end();
+        cb(null, data);
     });
 }
 
@@ -80,7 +112,7 @@ app.get('/', (req, res) => {
         const t1 = new Date();
         data.took = (t1 - t0);
         console.log(`Request received at @ ${(new Date()).getTime()} ... took ${data.took}ms`);
-        res.send(`<div>Took: ${data.took}. Got:</div><pre style="white-space: pre-wrap;">${JSON.stringify(data, null, 4)}</pre>`);
+        res.send(`<div>Took: ${data.took}. Got:</div><pre>${JSON.stringify(data, null, 4)}</pre>`);
     });
 });
 
