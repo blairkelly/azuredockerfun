@@ -44,6 +44,7 @@ const getSqlData = function (data, cb) {
         }
         else {
             // data.sql.result = results;
+            data.sql.resultCount = results.length;
             data.sql.result = results.map((r) => { return r.TABLE_NAME; }).join(' ');
         }
         cb(null, data);
