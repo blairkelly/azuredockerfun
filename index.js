@@ -30,7 +30,7 @@ const getDBConnection = function () {
     return connection;
 }
 
-const getTableContents = function (data, connection, cb) {
+const getTableContents = function (data, cb) {
     const tc = data.sql.tableContents = {};
     
     const randoTable = data.sql.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
@@ -55,7 +55,7 @@ const getTableContents = function (data, connection, cb) {
     });
 }
 
-const getTables = function (data, connection, cb) {
+const getTables = function (data, cb) {
     const tables = data.sql.tables = {};
     const q = tables.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
 
@@ -75,7 +75,7 @@ const getTables = function (data, connection, cb) {
         tables.resultCount = results.length;
         //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
         tables.results = results;
-        getTableContents(data, connection, cb);
+        getTableContents(data, cb);
     });
 }
 
