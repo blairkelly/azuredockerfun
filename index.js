@@ -19,6 +19,7 @@ const dirContents = function (cb) {
 const getSqlData = function (data, cb) {
     data.sql = {
         connectionConfig: {
+            MYSQL_USER: process.env.MYSQL_USER,
             MYSQL_DATABASE: process.env.MYSQL_DATABASE
         }
     };
@@ -34,7 +35,7 @@ const getSqlData = function (data, cb) {
      
     connection.connect();
     
-    const q = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
+    const q = data.sql.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
 
     connection.query(q, function (error, results, fields) {
         if (error) {
@@ -42,7 +43,8 @@ const getSqlData = function (data, cb) {
             data.sql.error = error;
         }
         else {
-            data.sql.result = results.map((r) => { return r.table_name; }).join(',');
+            data.sql.result = results;
+            //data.sql.result = results.map((r) => { return r.table_name; }).join(',');
         }
         cb(null, data);
         connection.end();
