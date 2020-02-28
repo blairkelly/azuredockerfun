@@ -2,6 +2,7 @@
 
 const express = require('express');
 const fs = require('fs');
+const mysql = require('mysql');
 
 // Constants
 const PORT = process.env.PORT || 3500;
@@ -16,6 +17,19 @@ const dirContents = function (cb) {
     });
 }
 
+const getDBConnection = function () {
+    const connection = mysql.createConnection({
+        host     : process.env.MYSQL_HOST,
+        user     : process.env.MYSQL_USER,
+        password : process.env.MYSQL_PASSWORD,
+        database : process.env.MYSQL_DATABASE
+    });
+     
+    connection.connect();
+
+    return connection;
+}
+
 const getTableContents = function (data, connection, cb) {
     const tc = data.sql.tableContents = {};
     
@@ -24,8 +38,11 @@ const getTableContents = function (data, connection, cb) {
     const q = tc.query = `SELECT * FROM ${process.env.MYSQL_DATABASE}.${randoTable} LIMIT 5;`;
 
     const t0 = new Date();
+
+    const connection = getDBConnection();
     
     connection.query(q, function (error, results, fields) {
+        connection.end();
         const t1 = new Date();
         tc.took = (t1 - t0);
         if (error) {
@@ -43,8 +60,11 @@ const getTables = function (data, connection, cb) {
     const q = tables.query = `SELECT table_name FROM information_schema.tables WHERE table_schema = '${process.env.MYSQL_DATABASE}';`;
 
     const t0 = new Date();
+
+    const connection = getDBConnection();
     
     connection.query(q, function (error, results, fields) {
+        connection.end();
         const t1 = new Date();
         tables.took = (t1 - t0);
         if (error) {
@@ -66,20 +86,8 @@ const getSqlData = function (data, cb) {
             MYSQL_DATABASE: process.env.MYSQL_DATABASE
         }
     };
-
-    const mysql = require('mysql');
     
-    const connection = mysql.createConnection({
-        host     : process.env.MYSQL_HOST,
-        user     : process.env.MYSQL_USER,
-        password : process.env.MYSQL_PASSWORD,
-        database : process.env.MYSQL_DATABASE
-    });
-     
-    connection.connect();
-    
-    getTables(data, connection, function (err, data) {
-        connection.end();
+    getTables(data, function (err, data) {
         cb(null, data);
     });
 }
