@@ -1,9 +1,11 @@
 'use strict';
 
+console.log(`Running @ ${(new Date()).getTime()} !`);
+
 const express = require('express');
 
 // Constants
-const PORT = 3500;
+const PORT = process.env.PORT || 3500;
 
 // App
 const app = express();
