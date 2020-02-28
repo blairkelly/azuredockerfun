@@ -43,8 +43,8 @@ const getSqlData = function (data, cb) {
             data.sql.error = error;
         }
         else {
-            data.sql.result = results;
-            //data.sql.result = results.map((r) => { return r.table_name; }).join(',');
+            // data.sql.result = results;
+            data.sql.result = results.map((r) => { return r.TABLE_NAME; }).join(',');
         }
         cb(null, data);
         connection.end();
@@ -77,7 +77,7 @@ app.get('/', (req, res) => {
         const t1 = new Date();
         data.took = (t1 - t0);
         console.log(`Request received at @ ${(new Date()).getTime()} ... took ${data.took}ms`);
-        res.send(`<pre>${JSON.stringify(data, null, 4)}</pre><div></div>`);
+        res.send(`<pre style="white-space: pre-wrap;">${JSON.stringify(data, null, 4)}</pre><div></div>`);
     });
 });
 
