@@ -19,7 +19,7 @@ const dirContents = function (cb) {
 const getTableContents = function (data, connection, cb) {
     const tc = data.sql.tableContents = {};
     
-    const randoTable = data.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
+    const randoTable = data.sql.tables.results[Math.floor(Math.random() * data.tables.results.length)].TABLE_NAME;
 
     const q = tc.query = `SELECT * FROM ${process.env.MYSQL_DATABASE}.${randoTable} LIMIT 5;`;
 
@@ -27,14 +27,13 @@ const getTableContents = function (data, connection, cb) {
     
     connection.query(q, function (error, results, fields) {
         const t1 = new Date();
+        tc.took = (t1 - t0);
         if (error) {
             console.error(error);
             tc.error = error;
+            return cb(null, data);
         }
-        else {
-            tc.took = (t1 - t0);
-            tc.resultCount = results.length;
-        }
+        tc.results = results;
         cb(null, data);
     });
 }
@@ -47,16 +46,15 @@ const getTables = function (data, connection, cb) {
     
     connection.query(q, function (error, results, fields) {
         const t1 = new Date();
+        tables.took = (t1 - t0);
         if (error) {
             console.error(error);
             tables.error = error;
+            return cb(null, data);
         }
-        else {
-            tables.took = (t1 - t0);
-            tables.resultCount = results.length;
-            //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
-            tables.results = results;
-        }
+        tables.resultCount = results.length;
+        //tables.results = results.map((r) => { return r.TABLE_NAME; }).join(' ');
+        tables.results = results;
         getTableContents(data, connection, cb);
     });
 }
